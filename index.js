@@ -3,7 +3,7 @@ const axios = require('axios');
 const cors = require('cors');
 require('dotenv').config();
 const app = express();
-app.use(express.static('.'));
+app.use(express.static('public'));
 // 1. Configuración de CORS para permitir que tu HTML local acceda
 app.use(cors());
 const TOKEN= process.env.API_TOKEN;
