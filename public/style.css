@@ -55,3 +55,11 @@ details { cursor: pointer; color: var(--cupra-copper); font-size: 0.85em; }
 
 #status { font-size: 0.9em; color: #888; }
 .loading { color: var(--cupra-copper); font-weight: bold; }
+
+
+.logo {
+    display: block;
+    margin: 0 auto 30px auto;
+    max-width: 150px;
+    height: auto;
+}
