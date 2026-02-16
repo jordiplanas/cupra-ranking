@@ -1,13 +1,13 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-
+require('dotenv').config();
 const app = express();
 app.use(express.static('.'));
 // 1. Configuración de CORS para permitir que tu HTML local acceda
 app.use(cors());
+const TOKEN= process.env.API_TOKEN;
 
-const TOKEN = '2v7k141f3zIWKosOjtHUYdaiUbBqI6g6';
 const BASE_URL = 'https://cupra.metaversotechnologies.com/score/';
 const BLOCKS = [
     'action-plan-sem', 'action-plan-sm', 'active-reception-ce', 'bonus-cm', 'brand', 
