@@ -71,11 +71,15 @@ app.get('/api/ranking', async (req, res) => {
     }
 });
 
-// 3. Arrancar
+/* 3. Arrancar
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`=========================================`);
     console.log(`🚀 SERVIDOR CORRIENDO EN PUERTO ${PORT}`);
     console.log(`🔗 URL: http://localhost:${PORT}/api/ranking`);
     console.log(`=========================================`);
+});*/
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Servidor corriendo en ${PORT}`);
 });
