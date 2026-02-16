@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUPRA | Performance Dashboard</title>
+    <style>
+        :root {
+            --cupra-copper: #c19770;
+            --cupra-petrol: #111e2b;
+            --dark-bg: #050a0f;
+            --card-bg: #111820;
+            --text: #e0e0e0;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark-bg); color: var(--text); padding: 30px; margin: 0; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #222; padding-bottom: 20px; }
+        h1 { color: var(--cupra-copper); text-transform: uppercase; letter-spacing: 2px; margin: 0; }
+
+        .controls { display: flex; gap: 15px; margin-bottom: 25px; background: var(--card-bg); padding: 20px; border-radius: 8px; align-items: center; }
+        input, select { background: #1a242d; border: 1px solid #333; color: white; padding: 12px; border-radius: 4px; outline: none; }
+        input { flex-grow: 2; }
+        
+        /* Botón CSV */
+        .btn-csv { background: var(--cupra-copper); color: var(--cupra-petrol); border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+        .btn-csv:hover { opacity: 0.8; }
+
+        .table-container { overflow-x: auto; background: var(--card-bg); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        table { width: 100%; border-collapse: collapse; }
+        
+        /* Cursor pointer en cabeceras */
+        th { background: #1a242d; color: var(--cupra-copper); padding: 15px; text-align: left; text-transform: uppercase; font-size: 0.75rem; cursor: pointer; user-select: none; }
+        th:hover { background: #252f3a; }
+
+        td { padding: 15px; border-bottom: 1px solid #222; }
+        tr:hover { background: #16202a; }
+
+        .score-total { font-weight: bold; color: #00ffd4; }
+        .duration { color: #ffcc00; font-family: monospace; }
+        .badge { background: #222; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; color: #aaa; }
+        
+        details { cursor: pointer; color: var(--cupra-copper); font-size: 0.85em; }
+        .block-list { list-style: none; padding: 10px; margin: 5px 0; background: #0d1218; border-radius: 4px; font-size: 0.8em; }
+        .block-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #1a242d; }
+
+        #status { font-size: 0.9em; color: #888; }
+        .loading { color: var(--cupra-copper); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CUPRA Ranking</h1>
+        <div id="status">Cargando...</div>
+    </header>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Buscar por nombre..." oninput="applyFilters()">
+        <select id="countryFilter" onchange="applyFilters()">
+            <option value="">Todos los Países</option>
+        </select>
+        <select id="jobFilter" onchange="applyFilters()">
+            <option value="">Todos los Roles</option>
+        </select>
+        <button class="btn-csv" onclick="downloadCSV()">⬇️ Exportar CSV</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th onclick="sortTable('index')">Pos. ↕️</th>
+                    <th onclick="sortTable('fullName')">Participante ↕️</th>
+                    <th onclick="sortTable('country')">País ↕️</th>
+                    <th onclick="sortTable('job_role')">Rol ↕️</th>
+                    <th onclick="sortTable('totalScore')">Puntos ↕️</th>
+                    <th onclick="sortTable('totalDuration')">Tiempo (s) ↕️</th>
+                    <th>Detalles</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+<script>
+    let allUsers = [];
+    let filteredUsers = [];
+    let currentSort = { column: 'totalScore', direction: 'desc' };
+
+    async function loadData() {
+        try {
+            const response = await fetch('http://localhost:3000/api/ranking');
+            allUsers = await response.json();
+            // Asignar índice inicial
+            allUsers = allUsers.map((u, i) => ({ ...u, index: i + 1 }));
+            
+            populateFilter('countryFilter', [...new Set(allUsers.map(u => u.country))]);
+            populateFilter('jobFilter', [...new Set(allUsers.map(u => u.job_role))]);
+
+            applyFilters();
+            document.getElementById('status').innerText = `Total: ${allUsers.length} participantes`;
+        } catch (err) {
+            document.getElementById('status').innerHTML = '<b style="color:red">Error de conexión</b>';
+        }
+    }
+
+    function sortTable(column) {
+        if (currentSort.column === column) {
+            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort.column = column;
+            currentSort.direction = (column === 'totalScore' || column === 'totalDuration') ? 'desc' : 'asc';
+        }
+
+        allUsers.sort((a, b) => {
+            let valA = a[column];
+            let valB = b[column];
+            if (typeof valA === 'string') {
+                return currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            }
+            return currentSort.direction === 'asc' ? valA - valB : valB - valA;
+        });
+
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const country = document.getElementById('countryFilter').value;
+        const job = document.getElementById('jobFilter').value;
+
+        filteredUsers = allUsers.filter(u => {
+            const matchesName = u.fullName.toLowerCase().includes(search);
+            const matchesCountry = !country || u.country === country;
+            const matchesJob = !job || u.job_role === job;
+            return matchesName && matchesCountry && matchesJob;
+        });
+
+        renderTable(filteredUsers);
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = data.map(u => `
+            <tr>
+                <td><small>${u.index}</small></td>
+                <td><strong>${u.fullName}</strong></td>
+                <td><span class="badge">${u.country}</span></td>
+                <td><small>${u.job_role}</small></td>
+                <td class="score-total">${u.totalScore.toFixed(2)}</td>
+                <td class="duration">${u.totalDuration.toFixed(1)}s</td>
+                <td>
+                    <details>
+                        <summary>${u.blocks.length} pruebas</summary>
+                        <div class="block-list">
+                            ${u.blocks.map(b => `<div class="block-item"><span>${b.name}</span><span>${b.score} pts</span></div>`).join('')}
+                        </div>
+                    </details>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function populateFilter(id, items) {
+        const select = document.getElementById(id);
+        items.sort().forEach(item => {
+            if(item && item !== 'N/A') {
+                const opt = document.createElement('option');
+                opt.value = item; opt.innerText = item;
+                select.appendChild(opt);
+            }
+        });
+    }
+
+    function downloadCSV() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Posicion,Nombre,Pais,Rol,Puntuacion,Tiempo\n";
+        
+        filteredUsers.forEach(u => {
+            let row = `${u.index},${u.fullName},${u.country},${u.job_role},${u.totalScore},${u.totalDuration}`;
+            csvContent += row + "\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "ranking_cupra.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    loadData();
+</script>
+</body>
+</html>
