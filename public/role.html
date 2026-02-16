@@ -1,140 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Best Job Role | CUPRA Awards</title>
 
 <style>
 @font-face {
-    font-family: myFont; /* set name */
-    src: url(assets/Typo/Cupra-Regular.ttf); /* url of the font */
+  font-family: myFont;
+  src: url(assets/Typo/Cupra-Regular.ttf);
 }
 
-p {
-    font-family: myFont; /* use font */
-}
-body {  font-family: myFont;
-    margin: 0;
-    color: white;
-    background: radial-gradient(circle at center, #1a2a3a 0%, #0c1118 70%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    overflow: hidden;
-}
+:root{
+  /* Color system */
+  --bg-top:#1a2a3a;
+  --bg-bottom:#0c1118;
+  --card-top:#212832;
+  --card-bottom:#141a22;
+  --card-border:rgba(255,255,255,.10);
+  --divider:rgba(255,255,255,.08);
+  --text-strong:#fff;
+  --text-dim:rgba(255,255,255,.70);
+  --text-mute:rgba(255,255,255,.55);
 
-h1 {
-    font-size: 60px;
-    margin-bottom: 10px;
-}
+  /* Accents */
+  --gold:#F3C969;
+  --silver:#C9D3DF;
+  --bronze:#C88953;
 
-.subtitle {
-    opacity: 0.7;
-    margin-bottom: 60px;
-}
+  /* Spacing scale */
+  --space-xxs:6px;
+  --space-xs:8px;
+  --space-sm:12px;
+  --space-md:16px;
+  --space-lg:24px;
+  --space-xl:32px;
+  --space-2xl:40px;
+  --space-3xl:56px;
 
-.podium {
-    display: flex;
-    align-items: flex-end;
-    gap: 40px;
-}
+  /* Sizes */
+  --card-w:300px;
+  --logo-badge:64px;
+  --logo-offset:32px; /* cuánto sobresale */
+  --trophy-badge:40px;
 
-.card {
-    width: 300px;
-    padding: 40px 20px;
-    border-radius: 20px;
-    background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-    backdrop-filter: blur(20px);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
-    text-align: center;
-    transition: all 0.5s ease;
+  /* Footer height */
+  --footer-h:64px;
+  --header-h:64px;
 }
 
-.first { transform: scale(1.15); border:1px solid rgba(255,200,0,0.5); }
-.second { transform: scale(1.05); opacity:0.95; }
-.third { opacity:0.85; }
-
-.position {
-    font-size: 14px;
-    margin-bottom: 10px;
-    opacity: 0.7;
+/* Base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  color:var(--text-strong);
+  font-family: myFont, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: radial-gradient(circle at 50% -10%, rgba(255,255,255,.10) 0%, rgba(0,0,0,0) 35%), 
+              radial-gradient(circle at center, var(--bg-top) 0%, var(--bg-bottom) 70%);
+  display:grid;
+  grid-template-rows: var(--header-h) auto var(--footer-h);
+  min-height:100vh;
 }
 
-.name {
-    font-size: 26px;
-    margin-bottom: 20px;
+/* Header */
+.header{
+  position:sticky; top:0; z-index:5;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 var(--space-xl);
+  backdrop-filter: blur(6px);
+  background: linear-gradient(180deg, rgba(12,17,24,0.55), rgba(12,17,24,0.10) 80%, transparent);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.header .brand{
+  display:flex; align-items:center; gap:var(--space-sm);
+}
+.header .brand img{ width:28px; height:28px; object-fit:contain; opacity:.95 }
+.header .brand .title{ font-size:14px; color:var(--text-dim); letter-spacing:.3px }
+.header .year{ font-size:14px; color:var(--text-dim) }
+
+/* Content wrapper */
+.main{
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  padding: var(--space-2xl) var(--space-xl) calc(var(--space-2xl) + var(--footer-h));
 }
 
-.points {
-    font-size: 40px;
-    font-weight: bold;
+/* Title block (como en la referencia) */
+.h1{
+  font-size:56px; font-weight:600; margin:0 0 var(--space-xs) 0; text-align:center;
+}
+.subtitle{
+  font-size:16px; color:var(--text-dim); margin:0 0 var(--space-2xl) 0; text-align:center;
 }
 
-footer {
-    position: absolute;
-    bottom: 30px;
-    left: 40px;
-    opacity: 0.6;
+/* Podium */
+.podium{
+  display:flex; align-items:flex-end; justify-content:center;
+  gap: var(--space-2xl);
+  width:100%;
+  flex-wrap:wrap;
+  padding-top: var(--space-3xl);
+  /* margen inferior para que no choque con footer */
+  margin-bottom: var(--space-3xl);
+}
+
+/* Cards */
+.card{
+  position:relative;
+  width:var(--card-w);
+  border-radius:18px;
+  background:linear-gradient(180deg, var(--card-top), var(--card-bottom));
+  border:1px solid var(--card-border);
+  box-shadow: 0 24px 50px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+  text-align:center;
+  padding: calc(var(--logo-offset) + 24px) var(--space-lg) var(--space-lg);
+  transition: transform .35s ease, opacity .35s ease;
+}
+
+/* Jerarquía del podio con base alineada (compensamos escalas) */
+.card.first{  transform: translateY(-8px) scale(1.08); }
+.card.second{ transform: translateY(4px)  scale(1.02); opacity:.95; }
+.card.third{  transform: translateY(12px) scale(1.00); opacity:.92; }
+
+/* Logo circular que sobresale */
+.logo-badge{
+  position:absolute; left:50%;
+  top: calc(-1 * var(--logo-offset));
+  transform: translateX(-50%);
+  width:var(--logo-badge); height:var(--logo-badge);
+  border-radius:50%;
+  display:grid; place-items:center;
+  background:#0f1a24;
+  border:1px solid var(--card-border);
+  box-shadow:0 12px 28px rgba(0,0,0,.45);
+}
+.logo-badge img{
+  width: calc(var(--logo-badge) - 8px);
+  height: calc(var(--logo-badge) - 8px);
+  border-radius:50%; object-fit:contain;
+}
+
+/* Tipos */
+.name{ font-size:18px; font-weight:600; margin: 6px 0 8px; }
+.trophy-wrap{ display:grid; place-items:center; margin: 4px 0 6px; }
+.trophy-badge{
+  width:var(--trophy-badge); height:var(--trophy-badge);
+
+}
+.trophy-badge img{ width:22px; height:22px; object-fit:contain; }
+
+
+.position{ font-size:12px; color:var(--text-mute); margin-bottom: 10px; }
+.divider{ height:1px; width:100%; background:var(--divider); margin: 4px 0 12px; border-radius:1px; }
+.points{ font-size:28px; font-weight:700; }
+
+/* Footer bar */
+.footer{
+  position:sticky; bottom:0; z-index:5;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 0 var(--space-xl);
+  background: linear-gradient(180deg, rgba(12,17,24,.65), rgba(12,17,24,.85));
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.footer .left{ font-size:14px; color:var(--text-dim); }
+.footer .right{ font-size:14px; color:var(--text-dim); }
+
+/* Responsive */
+@media (max-width: 980px){
+  .h1{ font-size:44px; }
+  .podium{ gap: var(--space-xl); }
+}
+@media (max-width: 740px){
+  :root{ --card-w: min(92vw, 360px); }
+  .h1{ font-size:36px; }
+  .card{ transform:none !important; }
 }
 </style>
 </head>
 <body>
-<img src="/logo.png" alt="CUPRA Logo" class="logo" />
 
-<h1>Best Job Role</h1>
-<div class="subtitle">Award goes to:</div>
+  <!-- HEADER -->
+  <header class="header" aria-label="Page header">
+    <div class="brand">
+      <!-- Si no tienes SVG, cambia por PNG -->
+      <img src="assets/img/logo.png" alt="Brand Mark">
+      <span class="title">One of Us Awards</span>
+    </div>
+    <div class="year">2026</div>
+  </header>
 
-<div class="podium" id="podium"></div>
+  <!-- MAIN -->
+  <main class="main" role="main">
+    <h1 class="h1">Best Job Role:</h1>
+    <p class="subtitle">Award goes to:</p>
 
-<footer>One of Us Awards 2026</footer>
+    <section class="podium" id="podium" aria-label="Ranking podium"></section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer" aria-label="Page footer">
+    <div class="left">One of Us Awards</div>
+    <div class="right">2026</div>
+  </footer>
 
 <script>
 async function loadRoles() {
-    const res = await fetch('/api/ranking');
-    const users = await res.json();
+  const res = await fetch('/api/ranking');
+  const users = await res.json();
 
-    const roleStats = {};
+  // Agrupar por job_role y promediar
+  const roleStats = {};
+  users.forEach(u => {
+    if (!roleStats[u.job_role]) roleStats[u.job_role] = { total: 0, count: 0 };
+    roleStats[u.job_role].total += u.totalScore;
+    roleStats[u.job_role].count += 1;
+  });
 
-    users.forEach(u => {
-        if (!roleStats[u.job_role]) {
-            roleStats[u.job_role] = { total: 0, count: 0 };
-        }
-        roleStats[u.job_role].total += u.totalScore;
-        roleStats[u.job_role].count += 1;
-    });
+  const top = Object.entries(roleStats)
+    .map(([role, data]) => ({ name: role, avg: data.total / data.count }))
+    .sort((a,b) => b.avg - a.avg)
+    .slice(0,3);
 
-    const top = Object.entries(roleStats)
-        .map(([role, data]) => ({
-            name: role,
-            avg: data.total / data.count
-        }))
-        .sort((a,b) => b.avg - a.avg)
-        .slice(0,3);
-
-    renderPodium(top);
+  renderPodium(top);
 }
 
-function renderPodium(data) {
-    const order = [2,0,1]; // display 3rd, 1st, 2nd
-    const classes = ["third","first","second"];
-    const labels = ["3rd Place","1st Place","2nd Place"];
+function renderPodium(data){
+  // Orden visual: 3rd, 1st, 2nd
+  const order   = [2,0,1];
+  const classes = ["third","first","second"];
+  const labels  = ["3rd Place","1st Place","2nd Place"];
 
-    const podium = document.getElementById("podium");
+  const icons = {
+    first:  "assets/img/gold.png",
+    second: "assets/img/silver.png",
+    third:  "assets/img/cooper.png"
+  };
 
-    podium.innerHTML = order.map((pos, i) => `
-        <div class="card ${classes[i]}">
-            <div class="position">${labels[i]}</div>
-            <div class="name">${data[pos]?.name || "-"}</div>
-            <div class="points">${data[pos]?.avg.toFixed(0) || "0"} Points</div>
+  const podium = document.getElementById('podium');
+
+  podium.innerHTML = order.map((pos,i)=>{
+    const item = data[pos] || { name:"-", avg:0 };
+    const cls  = classes[i];
+
+    const icon =
+      cls === "first"  ? icons.first  :
+      cls === "second" ? icons.second : icons.third;
+
+    return `
+      <article class="card ${cls}" role="group" aria-label="${labels[i]}">
+        <div class="logo-badge">
+          <img src="assets/img/logo-round.png" alt="Role logo">
         </div>
-    `).join('');
+
+        <h2 class="name">${escapeHtml(item.name)}</h2>
+
+        <div class="trophy-wrap">
+          <div class="trophy-badge">
+            <img src="${icon}" alt="Trophy ${labels[i]}">
+          </div>
+        </div>
+
+        <div class="position">${labels[i]}</div>
+        <div class="divider" aria-hidden="true"></div>
+        <div class="points">${Number(item.avg||0).toFixed(0)} Points</div>
+      </article>
+    `;
+  }).join('');
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, s => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[s]));
 }
 
 loadRoles();
 </script>
-
 </body>
 </html>

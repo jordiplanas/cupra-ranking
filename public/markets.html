@@ -1,136 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Best Market | CUPRA Awards</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
 
 <style>
+/* -------- FONT -------- */
 @font-face {
-    font-family: myFont; /* set name */
-    src: url(assets/Typo/Cupra-Regular.ttf); /* url of the font */
+  font-family: myFont;
+  src: url(assets/Typo/Cupra-Regular.ttf);
 }
 
-p {
-    font-family: myFont; /* use font */
-}
-body {  font-family: myFont;
-    margin: 0;
-    color: white;
-    background: radial-gradient(circle at center, #1a2a3a 0%, #0c1118 70%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    overflow: hidden;
-}
+/* -------- THEME -------- */
+:root{
+  --bg-top:#1a2a3a;
+  --bg-bottom:#0c1118;
+  --card-top:#212832;
+  --card-bottom:#141a22;
+  --card-border:rgba(255,255,255,.10);
+  --divider:rgba(255,255,255,.08);
 
-h1 {
-    font-size: 60px;
-    margin-bottom: 10px;
-}
+  --text-strong:#fff;
+  --text-dim:rgba(255,255,255,.70);
+  --text-mute:rgba(255,255,255,.55);
 
-.subtitle {
-    opacity: 0.7;
-    margin-bottom: 60px;
-}
+  --space-xl:32px;
+  --space-2xl:40px;
+  --space-3xl:56px;
 
-.podium {
-    display: flex;
-    align-items: flex-end;
-    gap: 40px;
+  --card-w:300px;
+  --logo-badge:64px;
+  --logo-offset:32px;
+  --trophy-badge:40px;
+
+  --footer-h:64px;
+  --header-h:64px;
 }
 
-.card {
-    width: 300px;
-    padding: 40px 20px;
-    border-radius: 20px;
-    background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-    backdrop-filter: blur(20px);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
-    text-align: center;
-    transition: all 0.5s ease;
+* { box-sizing: border-box; }
+
+/* -------- BODY -------- */
+body{
+  margin:0;
+  height:100vh;
+  color:var(--text-strong);
+  font-family: myFont, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(255,255,255,.10) 0%, rgba(0,0,0,0) 35%),
+    radial-gradient(circle at center, var(--bg-top) 0%, var(--bg-bottom) 70%);
+  display:grid;
+  grid-template-rows: var(--header-h) auto var(--footer-h);
 }
 
-.first { transform: scale(1.15); border:1px solid rgba(255,200,0,0.5); }
-.second { transform: scale(1.05); opacity:0.95; }
-.third { opacity:0.85; }
-
-.position {
-    font-size: 14px;
-    margin-bottom: 10px;
-    opacity: 0.7;
+/* -------- HEADER -------- */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 var(--space-xl);
+  background: linear-gradient(180deg, rgba(12,17,24,0.55), rgba(12,17,24,0.10) 80%);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  backdrop-filter:blur(6px);
+}
+.header .brand{
+  font-size:14px;
+  color:var(--text-dim);
 }
 
-.name {
-    font-size: 26px;
-    margin-bottom: 20px;
+/* -------- MAIN -------- */
+.main{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding: var(--space-2xl) var(--space-xl) calc(var(--space-2xl) + var(--footer-h));
 }
 
-.points {
-    font-size: 40px;
-    font-weight: bold;
+.h1{
+  font-size:56px;
+  margin:0 0 8px 0;
+  text-align:center;
+}
+.subtitle{
+  font-size:16px;
+  color:var(--text-dim);
+  margin:0 0 var(--space-2xl) 0;
+  text-align:center;
 }
 
-footer {
-    position: absolute;
-    bottom: 30px;
-    left: 40px;
-    opacity: 0.6;
+/* -------- PODIUM -------- */
+.podium{
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  gap:var(--space-2xl);
+  margin-top:var(--space-3xl);
+  margin-bottom:var(--space-3xl);
+  flex-wrap:wrap;
+}
+
+/* -------- CARD -------- */
+.card{
+  position:relative;
+  width:var(--card-w);
+  border-radius:18px;
+  text-align:center;
+  padding: calc(var(--logo-offset) + 24px) 24px 24px;
+  background:linear-gradient(180deg,var(--card-top),var(--card-bottom));
+  border:1px solid var(--card-border);
+  box-shadow:0 24px 50px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+  transition:transform .35s ease, opacity .35s ease;
+}
+.card.first{ transform: translateY(-8px) scale(1.08); }
+.card.second{transform: translateY(4px) scale(1.02); opacity:.95;}
+.card.third{ transform: translateY(12px) scale(1.00); opacity:.92; }
+
+/* -------- FLAG BADGE (EMOJI) -------- */
+.logo-badge{
+  position:absolute;
+  left:50%;
+  top: calc(-1 * var(--logo-offset));
+  transform: translateX(-50%);
+  width:var(--logo-badge);
+  height:var(--logo-badge);
+  border-radius:50%;
+  overflow:hidden;
+  border:1px solid var(--card-border);
+  box-shadow:0 12px 28px rgba(0,0,0,.45);
+}
+
+/* 👇 ESTA ES LA CLAVE */
+.flag{
+  width:100%;
+  height:100%;
+  background-size:cover;     /* rellena todo */
+  background-position:center;
+  background-repeat:no-repeat;
+}
+
+
+/* -------- TEXT -------- */
+.name{ font-size:18px; font-weight:600; margin:6px 0 8px; }
+.position{ font-size:12px; color:var(--text-mute); margin-bottom:10px; }
+.points{ font-size:28px; font-weight:700; }
+
+/* -------- TROPHY -------- */
+.trophy-wrap{ display:grid; place-items:center; margin:4px 0 6px; }
+
+.trophy-badge{
+
+}
+.trophy-badge img{
+  width:22px;
+  height:22px;
+  object-fit:contain;
+  display:block;
+}
+
+/* -------- DIVIDER -------- */
+.divider{
+  height:1px;
+  width:100%;
+  background:var(--divider);
+  margin:4px 0 12px;
+}
+
+/* -------- FOOTER -------- */
+.footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 var(--space-xl);
+  background:rgba(12,17,24,.85);
+  border-top:1px solid rgba(255,255,255,.08);
+  font-size:14px;
+  color:var(--text-dim);
+}
+
+/* -------- Responsive -------- */
+@media (max-width: 980px){
+  .h1{ font-size:44px; }
+  .podium{ gap: var(--space-xl); }
+}
+@media (max-width: 740px){
+  :root{ --card-w: min(92vw, 360px); }
+  .h1{ font-size:36px; }
+  .card{ transform:none !important; }
 }
 </style>
 </head>
+
 <body>
-<img src="/logo.png" alt="CUPRA Logo" class="logo" />
 
-<h1>Best Market</h1>
-<div class="subtitle">Award goes to:</div>
+<!-- HEADER -->
+<header class="header">
+  <div class="brand">One of Us Awards</div>
+  <div>2026</div>
+</header>
 
-<div class="podium" id="podium"></div>
+<!-- MAIN -->
+<main class="main">
+  <h1 class="h1">Best Market:</h1>
+  <p class="subtitle">Award goes to:</p>
 
-<footer>One of Us Awards 2026</footer>
+  <section class="podium" id="podium"></section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>One of Us Awards</div>
+  <div>2026</div>
+</footer>
 
 <script>
-async function loadMarkets() {
-    const res = await fetch('/api/ranking');
-    const users = await res.json();
+/* ---------------------------------------------
+   NORMALIZAR PAÍS → ISO2
+--------------------------------------------- */
+function normalizeCountry(raw){
+  if(!raw) return "EU";
+  let s = String(raw).trim().toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"");
 
-    const marketStats = {};
+  const map = {
+    es:"es", spain:"es", espana:"es", españa:"es",
+    de:"de", germany:"de", alemania:"de", deutschland:"de",
+    fr:"fr", france:"fr", francia:"fr",
+    it:"it", italy:"it", italia:"it",
+    uk:"gb", gb:"gb", england:"gb", scotland:"gb", wales:"gb",
+    nl:"nl", holland:"nl", holanda:"nl", netherlands:"nl", paisesbajos:"nl",
+    pt:"pt", portugal:"pt",
+    se:"se", suecia:"se", no:"no", noruega:"no", fi:"fi", finlandia:"fi", dk:"dk", dinamarca:"dk",
+    pl:"pl", polonia:"pl", cz:"cz", chequia:"cz", sk:"sk", eslovaquia:"sk",
+    ie:"ie", irlanda:"ie", ch:"ch", suiza:"ch", at:"at", austria:"at"
+  };
 
-    users.forEach(u => {
-        if (!marketStats[u.country]) {
-            marketStats[u.country] = { total: 0, count: 0 };
-        }
-        marketStats[u.country].total += u.totalScore;
-        marketStats[u.country].count += 1;
-    });
-
-    const top = Object.entries(marketStats)
-        .map(([country, data]) => ({
-            name: country,
-            avg: data.total / data.count
-        }))
-        .sort((a,b) => b.avg - a.avg)
-        .slice(0,3);
-
-    renderPodium(top);
+  if(s === "en") return "gb";      // "en" → UK
+  if(map[s]) return map[s];
+  if(s.length === 2) return s;     // ya es ISO-2
+  return "EU";
 }
 
-function renderPodium(data) {
-    const order = [2,0,1];
-    const classes = ["third","first","second"];
-    const labels = ["3rd Place","1st Place","2nd Place"];
+/* ---------------------------------------------
+   ISO2 → EMOJI (bandera)
+--------------------------------------------- */
+function isoToEmoji(code){
+  code = String(code || "EU").toUpperCase();
+  if(code.length!==2) return "🇪🇺";
+  const A = 0x1F1E6; // Regional Indicator Symbol Letter A
+  return String.fromCodePoint(
+    A + (code.charCodeAt(0) - 65),
+    A + (code.charCodeAt(1) - 65)
+  );
+}
 
-    const podium = document.getElementById("podium");
+/* ---------------------------------------------
+   CARGA DATOS → MEDIA POR PERSONA (Opción B)
+--------------------------------------------- */
+async function loadMarkets(){
+  const res = await fetch('/api/ranking');
+  const users = await res.json();
 
-    podium.innerHTML = order.map((pos, i) => `
-        <div class="card ${classes[i]}">
-            <div class="position">${labels[i]}</div>
-            <div class="name">${data[pos]?.name || "-"}</div>
-            <div class="points">${data[pos]?.avg.toFixed(0) || "0"} Points</div>
+  const markets = {}; // { iso: { total, count } }
+
+  users.forEach(u => {
+    const iso = normalizeCountry(u.country);
+    if(!markets[iso]) markets[iso] = { total:0, count:0 };
+    markets[iso].total += Number(u.totalScore) || 0; // tu server ya suma bloques por usuario
+    markets[iso].count += 1;
+  });
+
+  const top = Object.entries(markets)
+    .map(([iso, m]) => ({ iso, avg: m.total / m.count }))
+    .sort((a,b) => b.avg - a.avg)
+    .slice(0,3);
+
+  renderPodium(top);
+}
+
+/* ---------------------------------------------
+   RENDER PODIO (3º, 1º, 2º) + trofeos PNG
+--------------------------------------------- */
+function renderPodium(data){
+  const order   = [2,0,1];
+  const classes = ["third","first","second"];
+  const labels  = ["3rd Place","1st Place","2nd Place"];
+
+  const icons = {
+    first:  "assets/img/gold.png",
+    second: "assets/img/silver.png",
+    third:  "assets/img/cooper.png" // si no existe, hacemos fallback a bronze.png vía onerror
+  };
+
+  const podium = document.getElementById("podium");
+
+  podium.innerHTML = order.map((pos,i)=>{
+    const item = data[pos] || { iso:"EU", avg:0 };
+    const cls  = classes[i];
+    const label = labels[i];
+    const iconSrc = cls==="first" ? icons.first : cls==="second" ? icons.second : icons.third;
+const flag = `
+  <div class="flag" style="
+    background-image:url('https://cdn.jsdelivr.net/npm/flag-icons/flags/4x3/${item.iso.toLowerCase()}.svg')
+  "></div>
+`;
+
+
+
+    return `
+      <article class="card ${cls}" role="group" aria-label="${label}">
+        <div class="logo-badge" aria-hidden="true">${flag}</div>
+
+        <h2 class="name">${item.iso}</h2>
+
+        <div class="trophy-wrap">
+          <div class="trophy-badge">
+            <img src="${iconSrc}" alt="Trophy ${label}"
+                 onerror="this.onerror=null; this.src='assets/img/bronze.png';" />
+          </div>
         </div>
-    `).join('');
+
+        <div class="position">${label}</div>
+        <div class="divider" aria-hidden="true"></div>
+
+        <div class="points">${Number(item.avg||0).toFixed(0)} Points</div>
+      </article>
+    `;
+  }).join('');
 }
 
 loadMarkets();
