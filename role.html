@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Top 3 Roles - CUPRA Ranking</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<h1>💼 Top 3 Roles</h1>
+<div id="status">Cargando...</div>
+
+<ul id="topRoles"></ul>
+
+<script>
+async function loadTopRoles() {
+    try {
+        const response = await fetch('/api/ranking'); 
+        const users = await response.json();
+
+        const roleStats = {};
+
+        users.forEach(u => {
+            if (!roleStats[u.job_role]) {
+                roleStats[u.job_role] = { totalScore: 0, count: 0 };
+            }
+            roleStats[u.job_role].totalScore += u.totalScore;
+            roleStats[u.job_role].count += 1;
+        });
+
+        const topRoles = Object.entries(roleStats)
+            .map(([role, data]) => ({
+                name: role,
+                avgScore: data.totalScore / data.count
+            }))
+            .sort((a, b) => b.avgScore - a.avgScore)
+            .slice(0, 3);
+
+        document.getElementById("topRoles").innerHTML =
+            topRoles.map((r, i) => `
+                <li>
+                    <strong>#${i + 1}</strong> 
+                    ${r.name} — ${r.avgScore.toFixed(2)} pts
+                </li>
+            `).join('');
+
+        document.getElementById("status").innerText = "";
+    } catch (err) {
+        document.getElementById("status").innerHTML = 
+            "<b style='color:red'>Error de conexión</b>";
+    }
+}
+
+loadTopRoles();
+</script>
+
+</body>
+</html>

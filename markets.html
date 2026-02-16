@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Top 3 Países - CUPRA Ranking</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<h1>🌍 Top 3 Markets</h1>
+<div id="status">Cargando...</div>
+
+<ul id="topCountries"></ul>
+
+<script>
+async function loadTopCountries() {
+    try {
+        const response = await fetch('/api/ranking'); 
+        const users = await response.json();
+
+        const countryStats = {};
+
+        users.forEach(u => {
+            if (!countryStats[u.country]) {
+                countryStats[u.country] = { totalScore: 0, count: 0 };
+            }
+            countryStats[u.country].totalScore += u.totalScore;
+            countryStats[u.country].count += 1;
+        });
+
+        const topCountries = Object.entries(countryStats)
+            .map(([country, data]) => ({
+                name: country,
+                avgScore: data.totalScore / data.count
+            }))
+            .sort((a, b) => b.avgScore - a.avgScore)
+            .slice(0, 3);
+
+        document.getElementById("topCountries").innerHTML =
+            topCountries.map((c, i) => `
+                <li>
+                    <strong>#${i + 1}</strong> 
+                    ${c.name} — ${c.avgScore.toFixed(2)} pts
+                </li>
+            `).join('');
+
+        document.getElementById("status").innerText = "";
+    } catch (err) {
+        document.getElementById("status").innerHTML = 
+            "<b style='color:red'>Error de conexión</b>";
+    }
+}
+
+loadTopCountries();
+</script>
+
+</body>
+</html>
