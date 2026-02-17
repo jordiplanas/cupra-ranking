@@ -48,7 +48,7 @@
 
     async function loadData() {
         try {
-            const response = await fetch('http://localhost:3000/api/ranking');
+            const response = await fetch('api/ranking');
             allUsers = await response.json();
             // Asignar índice inicial
             allUsers = allUsers.map((u, i) => ({ ...u, index: i + 1 }));
