@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fastest Country | CUPRA Awards</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
+
+<style>
+@font-face {
+  font-family: myFont;
+  src: url(assets/Typo/Cupra-Regular.ttf);
+}
+
+:root{
+  --bg-top:#1a2a3a;
+  --bg-bottom:#0c1118;
+  --card-top:#212832;
+  --card-bottom:#141a22;
+  --border:rgba(255,255,255,.15);
+
+  --card-w:260px;
+  --badge:68px;
+}
+
+/* GLOBAL */
+body{
+  margin:0;
+  background:radial-gradient(circle at center, var(--bg-top), var(--bg-bottom));
+  color:white;
+  font-family:myFont, system-ui;
+  padding:40px 20px;
+  text-align:center;
+}
+
+/* Buttons small top-right */
+.selector{
+  position:absolute;
+  top:20px;
+  right:20px;
+  display:flex;
+  gap:10px;
+}
+.selector button{
+  font-family:myFont;
+  font-size:14px;
+  padding:6px 14px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:6px;
+  color:white;
+  cursor:pointer;
+}
+.selector button:hover{
+  background:rgba(255,255,255,0.15);
+}
+
+/* PODIUM */
+.podium{
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  gap:26px;
+  margin-top:80px;
+  flex-wrap:wrap;
+}
+
+/* CARD */
+.card{
+  width:var(--card-w);
+  background:linear-gradient(180deg,var(--card-top),var(--card-bottom));
+  border-radius:18px;
+  border:1px solid var(--border);
+  padding:80px 20px 25px;
+  text-align:center;
+  position:relative;
+  box-shadow:0 22px 40px rgba(0,0,0,.5);
+}
+.card.first{ transform:translateY(-18px) scale(1.08); }
+.card.second{transform:translateY(0px) scale(1.03); opacity:.96;}
+.card.third{ transform:translateY(10px) scale(1.00); opacity:.88; }
+
+/* FLAG BADGE */
+.flag-badge{
+  width:var(--badge);
+  height:var(--badge);
+  border-radius:50%;
+  background:#0f1a24;
+  border:1px solid var(--border);
+  box-shadow:0 10px 20px rgba(0,0,0,.5);
+
+  position:absolute;
+  top:-34px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.flag-badge span{
+  width:100%;
+  height:100%;
+  display:block;
+  background-size:cover;
+  border-radius:50%;
+}
+
+/* TEXT */
+.name{
+  font-size:22px;
+  margin-bottom:10px;
+}
+.position{
+  margin-top:6px;
+  opacity:0.6;
+}
+.duration{
+  margin-top:10px;
+  font-size:22px;
+}
+
+/* TROPHY */
+.trophy img{
+  width:40px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Fastest Country</h1>
+
+<div class="selector">
+  <button onclick="loadFastest('electrification')">Electrification</button>
+  <button onclick="loadFastest('brand')">Brand</button>
+</div>
+
+<div id="podium" class="podium"></div>
+
+<script>
+function normalizeCountry(raw){
+  if(!raw) return "eu";
+
+  let s=String(raw).trim().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+
+  const map={
+    es:"es", spain:"es", espana:"es", españa:"es",
+    de:"de", germany:"de", alemania:"de",
+    fr:"fr", france:"fr",
+    it:"it",
+    uk:"gb", gb:"gb", england:"gb",
+    nl:"nl", holland:"nl",
+    pt:"pt",
+    se:"se", no:"no", fi:"fi", dk:"dk",
+    pl:"pl", cz:"cz", sk:"sk"
+  };
+
+  if(s==="en") return "gb";
+
+  return map[s] || (s.length===2?s:"eu");
+}
+
+async function loadFastest(block){
+  const res=await fetch('/api/ranking');
+  const users=await res.json();
+
+  const buckets={};
+
+  users.forEach(u=>{
+    const b=u.blocks.find(x=>x.name===block);
+    if(b){
+      const iso=normalizeCountry(u.country);
+      if(!buckets[iso]) buckets[iso]={total:0,count:0};
+      buckets[iso].total += Number(b.duration);
+      buckets[iso].count++;
+    }
+  });
+
+  const arr=Object.entries(buckets).map(([iso,val])=>({
+    iso,
+    avg:val.total/val.count
+  }));
+
+  arr.sort((a,b)=>a.avg-b.avg);
+  const top3=arr.slice(0,3);
+
+  const order=[2,0,1];
+  const classes=["third","first","second"];
+  const labels=["3rd Place","1st Place","2nd Place"];
+  const icons={
+    first:"assets/img/gold.png",
+    second:"assets/img/silver.png",
+    third:"assets/img/cooper.png"
+  };
+
+  document.getElementById("podium").innerHTML=order.map((pos,i)=>{
+    const item=top3[pos]||{iso:"eu",avg:0};
+    const cls=classes[i];
+    const label=labels[i];
+    const trophy = cls==="first"?icons.first :
+                   cls==="second"?icons.second:icons.third;
+
+    return `
+      <div class="card ${cls}">
+        <div class="flag-badge">
+          <span class="fi fi-${item.iso.toLowerCase()}"></span>
+        </div>
+
+        <div class="name">${item.iso.toUpperCase()}</div>
+
+        <div class="trophy"><img src="${trophy}" /></div>
+
+        <div class="position">${label}</div>
+
+        <div class="duration">${item.avg.toFixed(1)} sec</div>
+      </div>
+    `;
+  }).join('');
+}
+</script>
+
+</body>
+</html>
