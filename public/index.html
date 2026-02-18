@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CUPRA | Performance Dashboard</title>
     <link rel="stylesheet" href="style.css" />
+    <style>
+        /* Estilos para las pestañas coherentes con tu diseño */
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #1a2a4a; }
+        .tab-btn { background: #1a2a4a; border: none; color: #888; padding: 12px 25px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .tab-btn.active { background: #c4a77d; color: #0a1128; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        .block-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #2a3a5a; font-size: 0.85em; }
+    </style>
 </head>
 <body>
 
@@ -14,7 +23,7 @@
     </header>
 
     <div class="controls">
-        <input type="text" id="searchInput" placeholder="Buscar por nombre..." oninput="applyFilters()">
+        <input type="text" id="searchInput" placeholder="Buscar..." oninput="applyFilters()">
         <select id="countryFilter" onchange="applyFilters()">
             <option value="">Todos los Países</option>
         </select>
@@ -24,63 +33,70 @@
         <button class="btn-csv" onclick="downloadCSV()">⬇️ Exportar CSV</button>
     </div>
 
-    <div class="table-container">
+    <div class="tabs">
+        <button id="tab-teams-btn" class="tab-btn active" onclick="switchTab('teams')">EQUIPOS (Collaboration)</button>
+        <button id="tab-indiv-btn" class="tab-btn" onclick="switchTab('individuals')">INDIVIDUAL (Global)</button>
+    </div>
+
+    <div id="panel-teams" class="table-container panel active">
         <table>
             <thead>
                 <tr>
-                    <th onclick="sortTable('index')">Pos. ↕️</th>
-                    <th onclick="sortTable('fullName')">Participante ↕️</th>
-                    <th onclick="sortTable('country')">País ↕️</th>
-                    <th onclick="sortTable('job_role')">Rol ↕️</th>
-                    <th onclick="sortTable('totalScore')">Puntos ↕️</th>
-                    <th onclick="sortTable('totalDuration')">Tiempo (s) ↕️</th>
+                    <th onclick="sortData('teams', 'country')">País ↕️</th>
+                    <th onclick="sortData('teams', 'groupId')">Equipo ↕️</th>
+                    <th onclick="sortData('teams', 'totalScore')">Puntos ↕️</th>
+                    <th onclick="sortData('teams', 'totalDuration')">Tiempo ↕️</th>
+                    <th>Participantes</th>
+                </tr>
+            </thead>
+            <tbody id="teamsBody"></tbody>
+        </table>
+    </div>
+
+    <div id="panel-individuals" class="table-container panel">
+        <table>
+            <thead>
+                <tr>
+                    <th onclick="sortData('individuals', 'fullName')">Participante ↕️</th>
+                    <th onclick="sortData('individuals', 'country')">País ↕️</th>
+                    <th onclick="sortData('individuals', 'job_role')">Rol ↕️</th>
+                    <th onclick="sortData('individuals', 'totalScore')">Puntos ↕️</th>
+                    <th onclick="sortData('individuals', 'totalDuration')">Tiempo ↕️</th>
                     <th>Detalles</th>
                 </tr>
             </thead>
-            <tbody id="tableBody"></tbody>
+            <tbody id="indivBody"></tbody>
         </table>
     </div>
 
 <script>
-    let allUsers = [];
-    let filteredUsers = [];
-    let currentSort = { column: 'totalScore', direction: 'desc' };
+    let rawData = { teams: [], individuals: [] };
+    let filteredData = { teams: [], individuals: [] };
+    let currentTab = 'teams';
+    let sortDir = -1;
 
     async function loadData() {
         try {
-            const response = await fetch('/api/ranking');
-            allUsers = await response.json();
-            // Asignar índice inicial
-            allUsers = allUsers.map((u, i) => ({ ...u, index: i + 1 }));
+            const response = await fetch('/api/ranking-master');
+            rawData = await response.json();
             
-            populateFilter('countryFilter', [...new Set(allUsers.map(u => u.country))]);
-            populateFilter('jobFilter', [...new Set(allUsers.map(u => u.job_role))]);
+            populateFilter('countryFilter', [...new Set(rawData.individuals.map(u => u.country))]);
+            populateFilter('jobFilter', [...new Set(rawData.individuals.map(u => u.job_role))]);
 
             applyFilters();
-            document.getElementById('status').innerText = `Total: ${allUsers.length} participantes`;
+            document.getElementById('status').innerText = "Datos actualizados";
         } catch (err) {
             document.getElementById('status').innerHTML = '<b style="color:red">Error de conexión</b>';
         }
     }
 
-    function sortTable(column) {
-        if (currentSort.column === column) {
-            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-        } else {
-            currentSort.column = column;
-            currentSort.direction = (column === 'totalScore' || column === 'totalDuration') ? 'desc' : 'asc';
-        }
-
-        allUsers.sort((a, b) => {
-            let valA = a[column];
-            let valB = b[column];
-            if (typeof valA === 'string') {
-                return currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-            }
-            return currentSort.direction === 'asc' ? valA - valB : valB - valA;
-        });
-
-        applyFilters();
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(`panel-${tab}`).classList.add('active');
+        document.getElementById(`tab-${tab === 'teams' ? 'teams' : 'indiv'}-btn`).classList.add('active');
     }
 
     function applyFilters() {
@@ -88,21 +104,44 @@
         const country = document.getElementById('countryFilter').value;
         const job = document.getElementById('jobFilter').value;
 
-        filteredUsers = allUsers.filter(u => {
-            const matchesName = u.fullName.toLowerCase().includes(search);
-            const matchesCountry = !country || u.country === country;
-            const matchesJob = !job || u.job_role === job;
-            return matchesName && matchesCountry && matchesJob;
-        });
+        filteredData.individuals = rawData.individuals.filter(u => 
+            u.fullName.toLowerCase().includes(search) &&
+            (!country || u.country === country) &&
+            (!job || u.job_role === job)
+        );
 
-        renderTable(filteredUsers);
+        filteredData.teams = rawData.teams.filter(t => 
+            (!country || t.country === country) &&
+            t.groupId.toLowerCase().includes(search)
+        );
+
+        renderTables();
     }
 
-    function renderTable(data) {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = data.map(u => `
+    function renderTables() {
+        // Render Equipos
+        document.getElementById('teamsBody').innerHTML = filteredData.teams.map(t => `
             <tr>
-                <td><small>${u.index}</small></td>
+                <td><span class="badge">${t.country}</span></td>
+                <td><strong>${t.groupId}</strong></td>
+                <td class="score-total">${t.totalScore.toFixed(2)}</td>
+                <td class="duration">${t.totalDuration.toFixed(1)}s</td>
+                <td>
+                    <details>
+                        <summary>${Object.keys(t.members).length} miembros</summary>
+                        <div class="block-list">
+                            ${Object.values(t.members).map(m => `
+                                <div class="block-item"><span>${m.name}</span><strong>${m.score.toFixed(1)} pts</strong></div>
+                            `).join('')}
+                        </div>
+                    </details>
+                </td>
+            </tr>
+        `).join('');
+
+        // Render Individual
+        document.getElementById('indivBody').innerHTML = filteredData.individuals.map(u => `
+            <tr>
                 <td><strong>${u.fullName}</strong></td>
                 <td><span class="badge">${u.country}</span></td>
                 <td><small>${u.job_role}</small></td>
@@ -112,12 +151,23 @@
                     <details>
                         <summary>${u.blocks.length} pruebas</summary>
                         <div class="block-list">
-                            ${u.blocks.map(b => `<div class="block-item"><span>${b.name}</span><span>${b.score} pts</span></div>`).join('')}
+                            ${u.blocks.map(b => `
+                                <div class="block-item"><span>${b.name}</span><span>${b.score} pts</span></div>
+                            `).join('')}
                         </div>
                     </details>
                 </td>
             </tr>
         `).join('');
+    }
+
+    function sortData(type, col) {
+        sortDir *= -1;
+        filteredData[type].sort((a, b) => {
+            let vA = a[col], vB = b[col];
+            return typeof vA === 'string' ? vA.localeCompare(vB) * sortDir : (vA - vB) * sortDir;
+        });
+        renderTables();
     }
 
     function populateFilter(id, items) {
@@ -132,21 +182,19 @@
     }
 
     function downloadCSV() {
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Posicion,Nombre,Pais,Rol,Puntuacion,Tiempo\n";
+        let csv = "\ufeffPosicion,Nombre/Equipo,Pais,Puntos,Tiempo\n";
+        const target = currentTab === 'teams' ? filteredData.teams : filteredData.individuals;
         
-        filteredUsers.forEach(u => {
-            let row = `${u.index},${u.fullName},${u.country},${u.job_role},${u.totalScore},${u.totalDuration}`;
-            csvContent += row + "\n";
+        target.forEach((item, i) => {
+            const name = currentTab === 'teams' ? item.groupId : item.fullName;
+            csv += `${i+1},${name},${item.country},${item.totalScore.toFixed(2)},${item.totalDuration.toFixed(1)}\n`;
         });
 
-        const encodedUri = encodeURI(csvContent);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "ranking_cupra.csv");
-        document.body.appendChild(link);
+        link.href = URL.createObjectURL(blob);
+        link.download = `cupra_ranking_${currentTab}.csv`;
         link.click();
-        document.body.removeChild(link);
     }
 
     loadData();
